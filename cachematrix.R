@@ -8,7 +8,7 @@ makeCacheMatrix <- function(x = matrix()) {
 		## Initialize the return object m to null upon function invocation
 		m <- NULL
 		
-		## set the value of a local object using the set function. This function return null.
+		## set the value of the global object x using the set function. 
 		
         set <- function(y) {
                 x <<- y
@@ -43,22 +43,28 @@ cacheSolve <- function(x, ...) {
 	        
 		mat<-x$get()
 		
-		## if (oldmat == mat) {
-		
-			## Now check if the inverse has been computed before
-			m <- x$getinv()
+		## Check if an old value exists and the dimensions are same
+		if (exists("oldmat") && dim(oldmat)==dim(mat)) {
 			
-			## return the value if it is computed before (not null)
-			if(!is.null(m)) {
-					message("getting cached data")
-					return(m)
-			}	
-		## 
-		##}
-		## oldmat <- mat
+			## Check if matrix has changed
+			z<-apply(oldmat==mat,1,all)
+			
+			if (length(z[z==FALSE]) == 0) {
+
+				## Now check if the inverse has been computed before
+				m <- x$getinv()
+			
+				## return the value if it is computed before (not null)
+				if(!is.null(m)) {
+						message("getting cached data")
+						return(m)
+					}	
+			}
+		}
+		## if the matrix has changed, update the global variable oldmat and compute the inverse
 		
-		## if not, compute the inverse and return it
-		
+		oldmat <<- mat
+		message("Computing matrix inverse")
 		m <- solve(mat)
         x$setinv(m)
         m
